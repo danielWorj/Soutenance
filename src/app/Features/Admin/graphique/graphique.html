@@ -1,128 +1,197 @@
- <div class="cf-content cf-page" id="page-graphique">
+<div class="cf-content" id="page-graphique">
 
-    <div class="cf-section-header">
-      <div>
-        <h1 class="cf-section-title">Graphiques</h1>
-        <div class="cf-section-sub">VISUALISATION DES DONNÉES · PNG · TÉLÉCHARGEABLE</div>
+  <!-- ══════════════════════════════════════ En-tête ══ -->
+  <div class="cf-section-header">
+    <div>
+      <h1 class="cf-section-title">Graphiques</h1>
+      <div class="cf-section-sub">VISUALISATION DES DONNÉES · PNG · TÉLÉCHARGEABLE</div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- ════════════════════════════ 1. Prix du Cacao ══ -->
+    <div class="col-lg-6">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">📈 Prix du Cacao</span>
+          <div class="d-flex gap-2 align-items-center">
+            @if (prixState().loading) {
+              <div class="cf-spinner-ring"></div>
+            }
+            @if (prixState().imageUrl) {
+              <a [href]="dlUrlPrix" class="btn-cf-outline py-1 px-2"
+                 style="font-size:.72rem" download="prix.png">⬇</a>
+            }
+          </div>
+        </div>
+
+        <div class="cf-card-body">
+          <form [formGroup]="formPrix" (ngSubmit)="genererPrix()">
+            <div class="row g-2 mb-3">
+              <div class="col-5">
+                <label class="cf-label">Date début</label>
+                <input type="date" class="cf-input" formControlName="dateDebut">
+              </div>
+              <div class="col-5">
+                <label class="cf-label">Date fin</label>
+                <input type="date" class="cf-input" formControlName="dateFin">
+              </div>
+              <div class="col-12">
+                <label class="cf-label">Granularité</label>
+                <select class="cf-select" formControlName="granularite">
+                  <option value="journalier">Journalier</option>
+                  <option value="mensuel">Mensuel</option>
+                  <option value="trimestriel">Trimestriel</option>
+                  <option value="annuel">Annuel</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-cf-primary w-100 mb-3"
+                    [disabled]="prixState().loading || formPrix.invalid">
+              @if (prixState().loading) { <span class="btn-spinner"></span> Génération… }
+              @else { Générer }
+            </button>
+          </form>
+
+          <!-- Zone image -->
+          <div class="cf-chart-zone">
+            @if (prixState().loading) {
+              <div class="cf-chart-loading">
+                <div class="cf-pulse-loader">
+                  <span></span><span></span><span></span>
+                </div>
+                <p class="cf-loading-text">Génération du graphique…</p>
+              </div>
+            } @else if (prixState().error) {
+              <div class="cf-chart-error">⚠️ {{ prixState().error }}</div>
+            } @else if (prixState().imageUrl) {
+              <img [src]="prixState().imageUrl" alt="Graphique Prix"
+                   class="cf-chart-img"
+                   (click)="ouvrirModal(prixState().imageUrl!, '📈 Prix du Cacao')">
+              <p class="cf-img-hint">Cliquez sur l'image pour agrandir</p>
+            } @else {
+              <div class="cf-chart-empty">
+                <div class="chart-empty-icon">📈</div>
+                <p>Cliquez sur Générer</p>
+              </div>
+            }
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="row g-3">
-
-      <!-- Graphique Prix -->
-      <div class="col-lg-6">
-        <div class="cf-card">
-          <div class="cf-card-header">
-            <span class="cf-card-title">📈 Prix du Cacao</span>
-            <div class="d-flex gap-2 align-items-center">
-              <div class="cf-spinner" id="spin-g-prix"></div>
-              <a id="btn-dl-prix" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="prix.png">⬇</a>
-            </div>
-          </div>
-          <div class="cf-card-body">
-            <div class="row g-2 mb-3">
-              <div class="col-5">
-                <label class="cf-label">Date début</label>
-                <input type="date" class="cf-input" id="g-prix-debut" value="2015-01-01">
-              </div>
-              <div class="col-5">
-                <label class="cf-label">Date fin</label>
-                <input type="date" class="cf-input" id="g-prix-fin" value="2024-12-31">
-              </div>
-              <div class="col-12">
-                <label class="cf-label">Granularité</label>
-                <select class="cf-select" id="g-prix-gran">
-                  <option value="journalier">Journalier</option>
-                  <option value="mensuel" selected>Mensuel</option>
-                  <option value="trimestriel">Trimestriel</option>
-                  <option value="annuel">Annuel</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiquePrix()">Générer</button>
-            <div class="cf-chart-zone" id="zone-g-prix">
-              <img id="img-g-prix" src="" alt="" style="display:none">
-              <div class="cf-chart-empty"><div class="chart-empty-icon">📈</div><p>Cliquez sur Générer</p></div>
-            </div>
+    <!-- ══════════════════════════ 2. Précipitations ══ -->
+    <div class="col-lg-6">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">🌧️ Précipitations</span>
+          <div class="d-flex gap-2 align-items-center">
+            @if (precipState().loading) {
+              <div class="cf-spinner-ring"></div>
+            }
+            @if (precipState().imageUrl) {
+              <a [href]="dlUrlPrecip" class="btn-cf-outline py-1 px-2"
+                 style="font-size:.72rem" download="precip.png">⬇</a>
+            }
           </div>
         </div>
-      </div>
 
-      <!-- Graphique Précipitations -->
-      <div class="col-lg-6">
-        <div class="cf-card">
-          <div class="cf-card-header">
-            <span class="cf-card-title">🌧️ Précipitations</span>
-            <div class="d-flex gap-2 align-items-center">
-              <div class="cf-spinner" id="spin-g-precip"></div>
-              <a id="btn-dl-precip" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="precip.png">⬇</a>
-            </div>
-          </div>
-          <div class="cf-card-body">
+        <div class="cf-card-body">
+          <form [formGroup]="formPrecip" (ngSubmit)="genererPrecip()">
             <div class="row g-2 mb-3">
               <div class="col-5">
                 <label class="cf-label">Date début</label>
-                <input type="date" class="cf-input" id="g-pr-debut" value="2015-01-01">
+                <input type="date" class="cf-input" formControlName="dateDebut">
               </div>
               <div class="col-5">
                 <label class="cf-label">Date fin</label>
-                <input type="date" class="cf-input" id="g-pr-fin" value="2024-12-31">
+                <input type="date" class="cf-input" formControlName="dateFin">
               </div>
+
+              <!-- Checkboxes pays -->
               <div class="col-12">
                 <label class="cf-label">Pays</label>
-                <div class="d-flex gap-3 flex-wrap mt-1">
-                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
-                    <input type="checkbox" class="pays-check" value="cote_ivoire" checked style="accent-color:var(--cf-green)"> Côte d'Ivoire
-                  </label>
-                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
-                    <input type="checkbox" class="pays-check" value="ghana" checked style="accent-color:var(--cf-green)"> Ghana
-                  </label>
-                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
-                    <input type="checkbox" class="pays-check" value="cameroun" checked style="accent-color:var(--cf-green)"> Cameroun
-                  </label>
+                <div class="d-flex gap-3 flex-wrap mt-1" formGroupName="pays">
+                  @for (p of [['cote_ivoire', "Côte d'Ivoire"], ['ghana', 'Ghana'], ['cameroun', 'Cameroun']]; track p[0]) {
+                    <label class="cf-checkbox-label">
+                      <input type="checkbox" [formControlName]="p[0]"
+                             style="accent-color:var(--cf-green)">
+                      {{ p[1] }}
+                    </label>
+                  }
                 </div>
               </div>
+
               <div class="col-12">
                 <label class="cf-label">Granularité</label>
-                <select class="cf-select" id="g-pr-gran">
-                  <option value="mensuel" selected>Mensuel</option>
+                <select class="cf-select" formControlName="granularite">
+                  <option value="mensuel">Mensuel</option>
                   <option value="trimestriel">Trimestriel</option>
                   <option value="annuel">Annuel</option>
                 </select>
               </div>
             </div>
-            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiquePrecip()">Générer</button>
-            <div class="cf-chart-zone" id="zone-g-precip">
-              <img id="img-g-precip" src="" alt="" style="display:none">
-              <div class="cf-chart-empty"><div class="chart-empty-icon">🌧️</div><p>Cliquez sur Générer</p></div>
-            </div>
+            <button type="submit" class="btn-cf-primary w-100 mb-3"
+                    [disabled]="precipState().loading || formPrecip.invalid">
+              @if (precipState().loading) { <span class="btn-spinner"></span> Génération… }
+              @else { Générer }
+            </button>
+          </form>
+
+          <div class="cf-chart-zone">
+            @if (precipState().loading) {
+              <div class="cf-chart-loading">
+                <div class="cf-pulse-loader"><span></span><span></span><span></span></div>
+                <p class="cf-loading-text">Génération du graphique…</p>
+              </div>
+            } @else if (precipState().error) {
+              <div class="cf-chart-error">⚠️ {{ precipState().error }}</div>
+            } @else if (precipState().imageUrl) {
+              <img [src]="precipState().imageUrl" alt="Graphique Précipitations"
+                   class="cf-chart-img"
+                   (click)="ouvrirModal(precipState().imageUrl!, '🌧️ Précipitations')">
+              <p class="cf-img-hint">Cliquez sur l'image pour agrandir</p>
+            } @else {
+              <div class="cf-chart-empty">
+                <div class="chart-empty-icon">🌧️</div><p>Cliquez sur Générer</p>
+              </div>
+            }
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Graphique Combiné -->
-      <div class="col-lg-6">
-        <div class="cf-card">
-          <div class="cf-card-header">
-            <span class="cf-card-title">🔀 Graphique Combiné</span>
-            <div class="d-flex gap-2 align-items-center">
-              <div class="cf-spinner" id="spin-g-comb"></div>
-              <a id="btn-dl-comb" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="combine.png">⬇</a>
-            </div>
+    <!-- ══════════════════════════ 3. Graphique Combiné ══ -->
+    <div class="col-lg-6">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">🔀 Graphique Combiné</span>
+          <div class="d-flex gap-2 align-items-center">
+            @if (combState().loading) {
+              <div class="cf-spinner-ring"></div>
+            }
+            @if (combState().imageUrl) {
+              <a [href]="dlUrlComb" class="btn-cf-outline py-1 px-2"
+                 style="font-size:.72rem" download="combine.png">⬇</a>
+            }
           </div>
-          <div class="cf-card-body">
+        </div>
+
+        <div class="cf-card-body">
+          <form [formGroup]="formComb" (ngSubmit)="genererCombine()">
             <div class="row g-2 mb-3">
               <div class="col-5">
                 <label class="cf-label">Date début</label>
-                <input type="date" class="cf-input" id="g-cb-debut" value="2015-01-01">
+                <input type="date" class="cf-input" formControlName="dateDebut">
               </div>
               <div class="col-5">
                 <label class="cf-label">Date fin</label>
-                <input type="date" class="cf-input" id="g-cb-fin" value="2024-12-31">
+                <input type="date" class="cf-input" formControlName="dateFin">
               </div>
               <div class="col-6">
                 <label class="cf-label">Pays précipitations</label>
-                <select class="cf-select" id="g-cb-pays">
+                <select class="cf-select" formControlName="paysPrecip">
                   <option value="cote_ivoire">Côte d'Ivoire</option>
                   <option value="ghana">Ghana</option>
                   <option value="cameroun">Cameroun</option>
@@ -130,48 +199,120 @@
               </div>
               <div class="col-6">
                 <label class="cf-label">Granularité</label>
-                <select class="cf-select" id="g-cb-gran">
-                  <option value="mensuel" selected>Mensuel</option>
+                <select class="cf-select" formControlName="granularite">
+                  <option value="mensuel">Mensuel</option>
                   <option value="trimestriel">Trimestriel</option>
                 </select>
               </div>
             </div>
-            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiqueCombine()">Générer</button>
-            <div class="cf-chart-zone" id="zone-g-comb">
-              <img id="img-g-comb" src="" alt="" style="display:none">
-              <div class="cf-chart-empty"><div class="chart-empty-icon">🔀</div><p>Cliquez sur Générer</p></div>
-            </div>
+            <button type="submit" class="btn-cf-primary w-100 mb-3"
+                    [disabled]="combState().loading || formComb.invalid">
+              @if (combState().loading) { <span class="btn-spinner"></span> Génération… }
+              @else { Générer }
+            </button>
+          </form>
+
+          <div class="cf-chart-zone">
+            @if (combState().loading) {
+              <div class="cf-chart-loading">
+                <div class="cf-pulse-loader"><span></span><span></span><span></span></div>
+                <p class="cf-loading-text">Génération du graphique…</p>
+              </div>
+            } @else if (combState().error) {
+              <div class="cf-chart-error">⚠️ {{ combState().error }}</div>
+            } @else if (combState().imageUrl) {
+              <img [src]="combState().imageUrl" alt="Graphique Combiné"
+                   class="cf-chart-img"
+                   (click)="ouvrirModal(combState().imageUrl!, '🔀 Graphique Combiné')">
+              <p class="cf-img-hint">Cliquez sur l'image pour agrandir</p>
+            } @else {
+              <div class="cf-chart-empty">
+                <div class="chart-empty-icon">🔀</div><p>Cliquez sur Générer</p>
+              </div>
+            }
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Graphique Prévision -->
-      <div class="col-lg-6">
-        <div class="cf-card">
-          <div class="cf-card-header">
-            <span class="cf-card-title">🔮 Prévision visuelle</span>
-            <div class="d-flex gap-2 align-items-center">
-              <div class="cf-spinner" id="spin-g-prev"></div>
-              <a id="btn-dl-prev" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="prevision.png">⬇</a>
-            </div>
+    <!-- ══════════════════════════ 4. Prévision visuelle ══ -->
+    <div class="col-lg-6">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">🔮 Prévision visuelle</span>
+          <div class="d-flex gap-2 align-items-center">
+            @if (prevState().loading) {
+              <div class="cf-spinner-ring"></div>
+            }
+            @if (prevState().imageUrl) {
+              <a [href]="dlUrlPrev" class="btn-cf-outline py-1 px-2"
+                 style="font-size:.72rem" download="prevision.png">⬇</a>
+            }
           </div>
-          <div class="cf-card-body">
+        </div>
+
+        <div class="cf-card-body">
+          <form [formGroup]="formPrev" (ngSubmit)="genererPrevision()">
             <div class="mb-3">
               <label class="cf-label">Mois d'historique à afficher</label>
               <div class="d-flex align-items-center gap-3 mt-1">
-                <input type="range" class="cf-range flex-1" id="g-pv-mois" min="6" max="60" value="24"
-                       oninput="document.getElementById('g-pv-mois-val').textContent=this.value+' mois'">
-                <span class="cf-range-val" id="g-pv-mois-val">24 mois</span>
+                <input type="range" class="cf-range flex-1"
+                       formControlName="nbMois" min="6" max="60">
+                <span class="cf-range-val">{{ nbMoisLabel() }}</span>
               </div>
             </div>
-            <button class="btn-cf-gold w-100 mb-3" onclick="genererGraphiquePrevision()">Générer</button>
-            <div class="cf-chart-zone" id="zone-g-prev">
-              <img id="img-g-prev" src="" alt="" style="display:none">
-              <div class="cf-chart-empty"><div class="chart-empty-icon">🔮</div><p>Cliquez sur Générer</p></div>
-            </div>
+            <button type="submit" class="btn-cf-gold w-100 mb-3"
+                    [disabled]="prevState().loading || formPrev.invalid">
+              @if (prevState().loading) { <span class="btn-spinner"></span> Génération… }
+              @else { Générer }
+            </button>
+          </form>
+
+          <div class="cf-chart-zone">
+            @if (prevState().loading) {
+              <div class="cf-chart-loading">
+                <div class="cf-pulse-loader"><span></span><span></span><span></span></div>
+                <p class="cf-loading-text">Calcul des prévisions…</p>
+              </div>
+            } @else if (prevState().error) {
+              <div class="cf-chart-error">⚠️ {{ prevState().error }}</div>
+            } @else if (prevState().imageUrl) {
+              <img [src]="prevState().imageUrl" alt="Prévision"
+                   class="cf-chart-img"
+                   (click)="ouvrirModal(prevState().imageUrl!, '🔮 Prévision visuelle')">
+              <p class="cf-img-hint">Cliquez sur l'image pour agrandir</p>
+            } @else {
+              <div class="cf-chart-empty">
+                <div class="chart-empty-icon">🔮</div><p>Cliquez sur Générer</p>
+              </div>
+            }
           </div>
         </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+</div><!-- /page -->
+
+
+<!-- ══════════════════════════════════════════ MODAL ══ -->
+@if (modal().visible) {
+  <div class="cf-modal-backdrop" (click)="fermerModal()">
+    <div class="cf-modal" (click)="$event.stopPropagation()">
+
+      <div class="cf-modal-header">
+        <span class="cf-modal-title">{{ modal().titre }}</span>
+        <div class="d-flex gap-2 align-items-center">
+          <a [href]="modal().url!" download class="btn-cf-outline py-1 px-3"
+             style="font-size:.75rem">⬇ Télécharger</a>
+          <button class="cf-modal-close" (click)="fermerModal()">✕</button>
+        </div>
+      </div>
+
+      <div class="cf-modal-body">
+        <img [src]="modal().url!" alt="{{ modal().titre }}" class="cf-modal-img">
       </div>
 
     </div>
   </div>
+}
