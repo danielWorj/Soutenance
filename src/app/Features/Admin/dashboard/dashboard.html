@@ -1,0 +1,183 @@
+<div class="cf-content">
+
+  <div class="cf-section-header">
+    <div>
+      <h1 class="cf-section-title">Vue d'ensemble</h1>
+      <div class="cf-section-sub">SYSTÈME CACAO FORECAST — RÉSUMÉ GÉNÉRAL</div>
+    </div>
+    <a routerLink="/prevision" class="btn-cf-gold">+ Nouvelle prévision</a>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="cf-kpi kpi-green">
+        <div class="cf-kpi-icon">💲</div>
+        <div class="cf-kpi-label">Prix disponibles</div>
+        <div class="cf-kpi-value">{{ nbPrix() | number }}</div>
+        <div class="cf-kpi-sub">entrées en base</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cf-kpi kpi-gold">
+        <div class="cf-kpi-icon">🌧️</div>
+        <div class="cf-kpi-label">Précipitations</div>
+        <div class="cf-kpi-value">{{ nbPrecip() | number }}</div>
+        <div class="cf-kpi-sub">3 pays · journalier</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cf-kpi kpi-green">
+        <div class="cf-kpi-icon">⚙️</div>
+        <div class="cf-kpi-label">Modèle actif</div>
+        <div class="cf-kpi-value" style="font-size:1rem">{{ nomModele() }}</div>
+        <div class="cf-kpi-sub">
+          @if (systemePret()) {
+            <span class="cf-badge cf-badge-green">✓ Prêt</span>
+          } @else {
+            <span class="cf-badge cf-badge-red">✗ Insuffisant</span>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cf-kpi kpi-orange">
+        <div class="cf-kpi-icon">📐</div>
+        <div class="cf-kpi-label">MAPE modèle</div>
+        <div class="cf-kpi-value">{{ mape() }}</div>
+        <div class="cf-kpi-sub">erreur moyenne abs.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- Métriques modèle -->
+    <div class="col-lg-4">
+      <div class="cf-card h-100">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Performance SARIMAX</span>
+          @if (modeleActif()) {
+            <span class="cf-badge cf-badge-green">Actif</span>
+          } @else {
+            <span class="cf-badge cf-badge-gray">Aucun</span>
+          }
+        </div>
+        <div class="cf-card-body">
+          <div class="cf-metric">
+            <span class="cf-metric-label">MAE</span>
+            <span class="cf-metric-value">{{ mae() }}</span>
+          </div>
+          <div class="cf-metric">
+            <span class="cf-metric-label">RMSE</span>
+            <span class="cf-metric-value">{{ rmse() }}</span>
+          </div>
+          <div class="cf-metric">
+            <span class="cf-metric-label">MAPE</span>
+            <span class="cf-metric-value">{{ mape() }}</span>
+          </div>
+          <div class="cf-metric">
+            <span class="cf-metric-label">AIC</span>
+            <span class="cf-metric-value">{{ aic() }}</span>
+          </div>
+          @if (modeleActif()) {
+            <div class="cf-metric">
+              <span class="cf-metric-label">Période</span>
+              <span class="cf-metric-value" style="font-size:.72rem">
+                {{ modeleActif()!.date_debut | date:'dd/MM/yy' }}
+                → {{ modeleActif()!.date_fin | date:'dd/MM/yy' }}
+              </span>
+            </div>
+          }
+          <div class="mt-4">
+            <a routerLink="/expert" class="btn-cf-outline w-100" style="text-decoration:none;justify-content:center">
+              Gérer le modèle →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernières prévisions -->
+    <div class="col-lg-8">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Dernières prévisions</span>
+          <a routerLink="/prevision" class="btn-cf-outline py-1 px-3" style="font-size:.75rem;text-decoration:none">
+            Voir tout
+          </a>
+        </div>
+        <div class="cf-card-body p-0">
+          <div class="table-responsive">
+            <table class="cf-table">
+              <thead>
+                <tr>
+                  <th>Date prévue</th>
+                  <th>Prix prévu</th>
+                  <th>Intervalle 95%</th>
+                  <th>Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (dernieresPrev().length === 0) {
+                  <tr>
+                    <td colspan="4" class="text-center text-cf-muted py-4 font-mono" style="font-size:.75rem">
+                      Aucune prévision générée
+                    </td>
+                  </tr>
+                }
+                @for (p of dernieresPrev(); track p.id) {
+                  <tr>
+                    <td class="td-mono">{{ p.date_prev | date:'dd/MM/yyyy' }}</td>
+                    <td class="td-price">{{ formatMoney(p.prix_prevu) }}</td>
+                    <td style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--cf-text-3)">
+                      [{{ formatMoney(p.ic_bas) }} – {{ formatMoney(p.ic_haut) }}]
+                    </td>
+                    <td>
+                      <span [class]="getSignalClass(p.signal)">
+                        {{ getSignalLabel(p.signal) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="col-12">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Activité récente</span>
+          <div class="d-flex gap-2 align-items-center">
+            @if (loading()) {
+              <div class="cf-spinner active"></div>
+            }
+            <a routerLink="/data" class="btn-cf-primary py-1 px-3" style="font-size:.75rem;text-decoration:none">
+              + Importer
+            </a>
+          </div>
+        </div>
+        <div class="cf-card-body">
+          @if (derniersLogs().length === 0) {
+            <p class="text-cf-muted font-mono" style="font-size:.75rem">Aucun import enregistré</p>
+          }
+          @for (log of derniersLogs(); track log.id) {
+            <div class="cf-log-item">
+              <div [class]="getLogClass(log.statut)"></div>
+              <div class="cf-log-info">
+                <div class="cf-log-source">{{ log.source }} — {{ log.type_data }}</div>
+                <div class="cf-log-msg">{{ log.message }}</div>
+              </div>
+              <div class="cf-log-time">{{ log.created_at | date:'dd/MM/yy' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

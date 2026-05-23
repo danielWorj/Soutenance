@@ -1,0 +1,327 @@
+
+<!-- ════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
+<app-sidebar-layout></app-sidebar-layout>
+
+<!-- Overlay mobile -->
+<div class="cf-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════ -->
+<div class="cf-main">
+
+  <!-- TOPBAR -->
+  <header class="cf-topbar">
+    <button class="d-lg-none btn p-0 me-2" onclick="toggleSidebar()" style="background:none;border:none;font-size:1.3rem;color:var(--cf-text-2)">☰</button>
+    <div>
+      <div class="cf-topbar-title" id="topbar-title">Tableau de bord</div>
+      <div class="cf-topbar-subtitle" id="topbar-subtitle">Vue d'ensemble du système</div>
+    </div>
+    <div class="cf-topbar-sep"></div>
+    <div class="cf-topbar-ticker">
+      <span style="font-size:.68rem;color:var(--cf-text-3);font-family:'DM Mono',monospace">CC=F</span>
+      <span class="cf-ticker-price" id="ticker-price">— USD/t</span>
+      <span class="cf-ticker-change" id="topbar-status">● —</span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       PAGE : MAIN
+  ══════════════════════════════════════════ -->
+  <router-outlet></router-outlet>
+
+</div><!-- /cf-main -->
+
+<!-- ════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+
+<!-- Modal Import Tout -->
+<div class="modal fade cf-modal" id="modalImportTout" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">⚡</span>
+          Import complet
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-info mb-4">
+          ℹ️ Importe simultanément les prix (Yahoo Finance) et les précipitations (NASA POWER) pour les 3 pays.
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Date début</label>
+            <input type="date" class="cf-input" id="imp-debut" value="2005-01-01">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Date fin</label>
+            <input type="date" class="cf-input" id="imp-fin" value="2024-12-31">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-gold d-flex align-items-center gap-2" onclick="submitImportTout()" id="btn-imp-tout">
+          <div class="cf-spinner" id="spin-imp-tout"></div> ⚡ Lancer l'import
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Prix -->
+<div class="modal fade cf-modal" id="modalImportPrix" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">💲</span>
+          Import des prix cacao
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-info mb-4">
+          ℹ️ Source : Yahoo Finance (CC=F futures). Fallback : NIB ETF.
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Date début</label>
+            <input type="date" class="cf-input" id="imp-prix-debut" value="2005-01-01">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Date fin</label>
+            <input type="date" class="cf-input" id="imp-prix-fin" value="2024-12-31">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-primary d-flex align-items-center gap-2" onclick="submitImportPrix()">
+          <div class="cf-spinner" id="spin-imp-prix"></div> Importer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Précipitations -->
+<div class="modal fade cf-modal" id="modalImportPrecip" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-gold-xlight)">🌧️</span>
+          Import des précipitations
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-warning mb-4">
+          ⚠️ Source : NASA POWER API. L'import peut prendre 1–2 minutes par pays.
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Date début</label>
+            <input type="date" class="cf-input" id="imp-pr-debut" value="1999-01-01">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Date fin</label>
+            <input type="date" class="cf-input" id="imp-pr-fin" value="2024-12-31">
+          </div>
+          <div class="col-12">
+            <label class="cf-label">Pays (vide = tous les 3)</label>
+            <select class="cf-select" id="imp-pr-pays">
+              <option value="">Tous les pays (CI + Ghana + Cameroun)</option>
+              <option value="cote_ivoire">Côte d'Ivoire uniquement</option>
+              <option value="ghana">Ghana uniquement</option>
+              <option value="cameroun">Cameroun uniquement</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-primary d-flex align-items-center gap-2" onclick="submitImportPrecip()">
+          <div class="cf-spinner" id="spin-imp-precip"></div> Importer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import ENSO -->
+<div class="modal fade cf-modal" id="modalImportEnso" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:#eff6ff">🌊</span>
+          Import indice ENSO/ONI
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-info mb-4">
+          ℹ️ Source : NOAA Climate Prediction Center. Données mensuelles depuis 1950.
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Date début (optionnel)</label>
+            <input type="date" class="cf-input" id="imp-enso-debut" value="1999-01-01">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Date fin (optionnel)</label>
+            <input type="date" class="cf-input" id="imp-enso-fin" value="2025-12-31">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-primary d-flex align-items-center gap-2" onclick="submitImportEnso()">
+          <div class="cf-spinner" id="spin-imp-enso"></div> Importer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Entraînement SARIMAX -->
+<div class="modal fade cf-modal" id="modalEntrainer" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">⚙️</span>
+          Lancer l'entraînement SARIMAX
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-warning mb-4">
+          ⚠️ L'entraînement peut durer plusieurs minutes. Le système réalise : ADF/KPSS → Grid search AIC → Fit SARIMAX → Validation MAE/RMSE/MAPE.
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="cf-label">Saisonnalité</label>
+            <select class="cf-select" id="train-saison">
+              <option value="12">12 mois (annuel)</option>
+              <option value="6">6 mois (semestriel)</option>
+              <option value="4">4 mois (trimestriel)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="cf-label">Date début (optionnel)</label>
+            <input type="date" class="cf-input" id="train-debut">
+          </div>
+          <div class="col-md-4">
+            <label class="cf-label">Date fin (optionnel)</label>
+            <input type="date" class="cf-input" id="train-fin">
+          </div>
+        </div>
+        <div class="mt-3 p-3 rounded" style="background:var(--cf-bg);border:1px solid var(--cf-border)">
+          <div class="font-mono text-cf-muted mb-2" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.8px">Pipeline automatique</div>
+          <div class="d-flex align-items-center gap-2 flex-wrap" style="font-size:.78rem">
+            <span class="cf-badge cf-badge-green">1. ADF/KPSS</span>
+            <span style="color:var(--cf-text-3)">→</span>
+            <span class="cf-badge cf-badge-green">2. Grid Search AIC</span>
+            <span style="color:var(--cf-text-3)">→</span>
+            <span class="cf-badge cf-badge-green">3. Fit SARIMAX</span>
+            <span style="color:var(--cf-text-3)">→</span>
+            <span class="cf-badge cf-badge-green">4. Validation</span>
+            <span style="color:var(--cf-text-3)">→</span>
+            <span class="cf-badge cf-badge-gold">5. Sauvegarde</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-gold d-flex align-items-center gap-2" onclick="submitEntrainement()" id="btn-train">
+          <div class="cf-spinner" id="spin-train"></div> ▶ Lancer l'entraînement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Prévision -->
+<div class="modal fade cf-modal" id="modalPrevision" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-gold-xlight)">🔮</span>
+          Nouvelle prévision
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-form-group">
+          <label class="cf-label">Horizon de prévision</label>
+          <div class="d-flex align-items-center gap-3 mt-2">
+            <input type="range" class="cf-range" id="prev-horizon" min="1" max="24" value="6">
+            <span class="cf-range-val" id="prev-horizon-val">6 mois</span>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Seuil bas alerte (USD/t)</label>
+            <input type="number" class="cf-input" id="prev-seuil-bas" placeholder="ex: 2000">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Seuil haut alerte (USD/t)</label>
+            <input type="number" class="cf-input" id="prev-seuil-haut" placeholder="ex: 5000">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-gold d-flex align-items-center gap-2" onclick="submitPrevision()" id="btn-prev">
+          <div class="cf-spinner" id="spin-prev"></div> 🔮 Générer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Seuils -->
+<div class="modal fade cf-modal" id="modalSeuils" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-orange-light)">⚙️</span>
+          Configurer les seuils d'alerte
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cf-alert cf-alert-info mb-4">
+          ℹ️ Les signaux orange s'activent à ±10% des seuils. Rouge = seuil dépassé.
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="cf-label">Seuil bas (USD/t)</label>
+            <input type="number" class="cf-input" id="upd-seuil-bas" placeholder="2000">
+          </div>
+          <div class="col-6">
+            <label class="cf-label">Seuil haut (USD/t)</label>
+            <input type="number" class="cf-input" id="upd-seuil-haut" placeholder="5000">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn-cf-primary" onclick="submitUpdateSeuils()">Mettre à jour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999"></div>

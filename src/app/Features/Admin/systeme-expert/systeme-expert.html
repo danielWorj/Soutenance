@@ -1,0 +1,244 @@
+<div class="cf-content">
+
+  <!-- Toast -->
+  @if (toast()) {
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+      <div class="toast show"
+           [style.border-left]="toast()!.type==='success' ? '3px solid var(--cf-green)' : '3px solid var(--cf-red)'"
+           style="border-radius:10px;min-width:280px">
+        <div class="toast-body d-flex gap-2" style="font-size:.82rem">
+          <span>{{ toast()!.type === 'success' ? '✅' : '❌' }}</span>
+          <span>{{ toast()!.msg }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="cf-section-header">
+    <div>
+      <h1 class="cf-section-title">Système Expert SARIMAX</h1>
+      <div class="cf-section-sub">DIAGNOSTIC · SÉLECTION AIC · ENTRAÎNEMENT · VALIDATION</div>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      @if (loadingPage()) { <div class="cf-spinner active"></div> }
+      <button class="btn-cf-gold" data-bs-toggle="modal" data-bs-target="#modalEntrainer">
+        ▶ Lancer l'entraînement
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs statut -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-green">
+        <div class="cf-kpi-label">Statut système</div>
+        <div class="cf-kpi-value" style="font-size:1rem;margin-top:8px">
+          @if (systemePret()) {
+            <span class="cf-badge cf-badge-green">✓ Prêt pour l'entraînement</span>
+          } @else {
+            <span class="cf-badge cf-badge-red">✗ Données insuffisantes</span>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-gold">
+        <div class="cf-kpi-label">Prix en base</div>
+        <div class="cf-kpi-value">{{ nbPrix() | number }}</div>
+        <div class="cf-kpi-sub">entrées</div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-green">
+        <div class="cf-kpi-label">Précipitations</div>
+        <div class="cf-kpi-value">{{ nbPrecip() | number }}</div>
+        <div class="cf-kpi-sub">entrées</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modèle actif -->
+  <div class="cf-card mb-3">
+    <div class="cf-card-header">
+      <span class="cf-card-title">Modèle actif</span>
+      <button class="btn-cf-outline py-1 px-3" style="font-size:.75rem" (click)="chargerPage()">
+        ↻ Rafraîchir
+      </button>
+    </div>
+    <div class="cf-card-body">
+      @if (!modeleActif()) {
+        <div class="cf-alert cf-alert-warning">
+          ⚠️ Aucun modèle actif. Importez des données puis lancez un entraînement.
+        </div>
+      } @else {
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="cf-metric">
+              <span class="cf-metric-label">Ordre ARIMA</span>
+              <span class="cf-metric-value">
+                ({{ modeleActif()!.ordre_p }},{{ modeleActif()!.ordre_d }},{{ modeleActif()!.ordre_q }})
+              </span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="cf-metric">
+              <span class="cf-metric-label">Ordre Saisonnier</span>
+              <span class="cf-metric-value">
+                ({{ modeleActif()!.ordre_sp }},{{ modeleActif()!.ordre_sd }},{{ modeleActif()!.ordre_sq }},{{ modeleActif()!.saisonnalite }})
+              </span>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="cf-metric">
+              <span class="cf-metric-label">AIC</span>
+              <span class="cf-metric-value">{{ modeleActif()!.aic | number:'1.1-1' }}</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="cf-metric">
+              <span class="cf-metric-label">MAE</span>
+              <span class="cf-metric-value">{{ modeleActif()!.mae | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="cf-metric">
+              <span class="cf-metric-label">MAPE</span>
+              <span class="cf-metric-value">{{ modeleActif()!.mape | number:'1.2-2' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-top d-flex align-items-center gap-3 flex-wrap">
+          <span class="cf-badge cf-badge-green">✓ Actif</span>
+          <span class="font-mono text-cf-muted" style="font-size:.72rem">{{ modeleActif()!.nom }}</span>
+          <span class="font-mono text-cf-muted" style="font-size:.72rem">
+            {{ modeleActif()!.date_debut | date:'dd/MM/yyyy' }} → {{ modeleActif()!.date_fin | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Historique modèles -->
+  <div class="cf-card">
+    <div class="cf-card-header">
+      <span class="cf-card-title">Historique des modèles</span>
+      <span class="cf-badge cf-badge-gray">{{ modeles().length }} modèle(s)</span>
+    </div>
+    <div class="cf-card-body p-0">
+      <div class="table-responsive">
+        <table class="cf-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Nom</th><th>Ordres (p,d,q)(P,D,Q,s)</th>
+              <th>AIC</th><th>MAE</th><th>Statut</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (modeles().length === 0) {
+              <tr>
+                <td colspan="7" class="text-center py-4 text-cf-muted font-mono" style="font-size:.75rem">
+                  Aucun modèle entraîné
+                </td>
+              </tr>
+            }
+            @for (m of modeles(); track m.id) {
+              <tr>
+                <td class="td-mono">#{{ m.id }}</td>
+                <td><span class="font-mono" style="font-size:.75rem">{{ m.nom }}</span></td>
+                <td class="td-mono">{{ getOrdresLabel(m) }}</td>
+                <td class="td-mono">{{ m.aic | number:'1.1-1' }}</td>
+                <td class="td-mono">{{ m.mae | number:'1.2-2' }}</td>
+                <td>
+                  @if (m.actif) {
+                    <span class="cf-badge cf-badge-green">Actif</span>
+                  } @else {
+                    <span class="cf-badge cf-badge-gray">Inactif</span>
+                  }
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    @if (!m.actif) {
+                      <button class="btn-cf-outline py-1 px-2" style="font-size:.72rem"
+                              (click)="activerModele(m.id)">
+                        Activer
+                      </button>
+                      <button class="btn-cf-danger py-1 px-2" style="font-size:.72rem"
+                              (click)="supprimerModele(m.id)">
+                        Supprimer
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ MODAL ENTRAÎNEMENT ═══════ -->
+<div class="modal fade cf-modal" id="modalEntrainer" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">⚙️</span>
+          Lancer l'entraînement SARIMAX
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formTrain" (ngSubmit)="submitEntrainement()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-warning mb-4">
+            ⚠️ L'entraînement peut durer plusieurs minutes. Pipeline : ADF/KPSS → Grid search AIC → Fit SARIMAX → Validation.
+          </div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="cf-label">Saisonnalité</label>
+              <select class="cf-select" formControlName="saisonnalite">
+                <option [value]="12">12 mois (annuel)</option>
+                <option [value]="6">6 mois (semestriel)</option>
+                <option [value]="4">4 mois (trimestriel)</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="cf-label">Date début (optionnel)</label>
+              <input type="date" class="cf-input" formControlName="date_debut">
+            </div>
+            <div class="col-md-4">
+              <label class="cf-label">Date fin (optionnel)</label>
+              <input type="date" class="cf-input" formControlName="date_fin">
+            </div>
+          </div>
+          <div class="mt-3 p-3 rounded" style="background:var(--cf-bg);border:1px solid var(--cf-border)">
+            <div class="font-mono text-cf-muted mb-2" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.8px">
+              Pipeline automatique
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap" style="font-size:.78rem">
+              <span class="cf-badge cf-badge-green">1. ADF/KPSS</span>
+              <span style="color:var(--cf-text-3)">→</span>
+              <span class="cf-badge cf-badge-green">2. Grid Search AIC</span>
+              <span style="color:var(--cf-text-3)">→</span>
+              <span class="cf-badge cf-badge-green">3. Fit SARIMAX</span>
+              <span style="color:var(--cf-text-3)">→</span>
+              <span class="cf-badge cf-badge-green">4. Validation</span>
+              <span style="color:var(--cf-text-3)">→</span>
+              <span class="cf-badge cf-badge-gold">5. Sauvegarde</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-gold d-flex align-items-center gap-2"
+                  [disabled]="formTrain.invalid || loadingTrain()">
+            @if (loadingTrain()) { <div class="cf-spinner active"></div> }
+            ▶ Lancer l'entraînement
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

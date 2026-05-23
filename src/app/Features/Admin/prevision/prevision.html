@@ -1,0 +1,285 @@
+<div class="cf-content">
+
+  <!-- Toast -->
+  @if (toast()) {
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+      <div class="toast show"
+           [style.border-left]="toast()!.type==='success' ? '3px solid var(--cf-green)' : '3px solid var(--cf-red)'"
+           style="border-radius:10px;min-width:280px">
+        <div class="toast-body d-flex gap-2" style="font-size:.82rem">
+          <span>{{ toast()!.type === 'success' ? '✅' : '❌' }}</span>
+          <span>{{ toast()!.msg }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="cf-section-header">
+    <div>
+      <h1 class="cf-section-title">Prévisions des Prix</h1>
+      <div class="cf-section-sub">SARIMAX · INTERVALLES DE CONFIANCE 95%</div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn-cf-outline" data-bs-toggle="modal" data-bs-target="#modalSeuils">⚙ Seuils</button>
+      <button class="btn-cf-gold" data-bs-toggle="modal" data-bs-target="#modalPrevision">🔮 Nouvelle prévision</button>
+    </div>
+  </div>
+
+  <!-- KPIs seuils -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-green">
+        <div class="cf-kpi-label">Seuil bas alerte</div>
+        <div class="cf-kpi-value">{{ formatMoney(seuils()?.seuil_bas) }}</div>
+        <div class="cf-kpi-sub">→ signal rouge si en-dessous</div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-red">
+        <div class="cf-kpi-label">Seuil haut alerte</div>
+        <div class="cf-kpi-value">{{ formatMoney(seuils()?.seuil_haut) }}</div>
+        <div class="cf-kpi-sub">→ signal rouge si au-dessus</div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="cf-kpi kpi-gold">
+        <div class="cf-kpi-label">Légende signaux</div>
+        <div class="d-flex flex-column gap-1 mt-2">
+          <span class="cf-signal cf-signal-vert">Stable</span>
+          <span class="cf-signal cf-signal-orange">Attention ±10%</span>
+          <span class="cf-signal cf-signal-rouge">Risque dépassé</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultat prévision -->
+  @if (resultat()) {
+    <div class="mb-4">
+
+      <!-- Résumé KPIs -->
+      <div class="cf-card mb-3">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Résumé de la prévision</span>
+          <div class="d-flex align-items-center gap-2">
+            <span [class]="signalGlobalClass()">{{ signalGlobalLabel() }}</span>
+            <span class="font-mono text-cf-muted" style="font-size:.72rem">
+              {{ resume()?.modele_utilise }}
+            </span>
+          </div>
+        </div>
+        <div class="cf-card-body">
+          <div class="row g-3">
+            <div class="col-6 col-md-3">
+              <div class="cf-kpi kpi-green" style="padding:14px">
+                <div class="cf-kpi-label">Prix moyen</div>
+                <div class="cf-kpi-value" style="font-size:1.2rem">
+                  {{ formatMoney(resume()?.prix_moyen) }}
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="cf-kpi kpi-gold" style="padding:14px">
+                <div class="cf-kpi-label">Prix min</div>
+                <div class="cf-kpi-value" style="font-size:1.2rem">
+                  {{ formatMoney(resume()?.prix_min) }}
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="cf-kpi kpi-orange" style="padding:14px">
+                <div class="cf-kpi-label">Prix max</div>
+                <div class="cf-kpi-value" style="font-size:1.2rem">
+                  {{ formatMoney(resume()?.prix_max) }}
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="cf-kpi kpi-green" style="padding:14px">
+                <div class="cf-kpi-label">Horizon</div>
+                <div class="cf-kpi-value" style="font-size:1.2rem">
+                  {{ resultat()!.horizon }} mois
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ GRAPHIQUE CHART.JS ══ -->
+      <div class="cf-card mb-3">
+        <div class="cf-card-header">
+          <span class="cf-card-title">📈 Évolution des prix prévus</span>
+          <div class="d-flex gap-2 align-items-center" style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--cf-text-3)">
+            <span class="cf-signal cf-signal-vert" style="font-size:.65rem">Stable</span>
+            <span class="cf-signal cf-signal-orange" style="font-size:.65rem">Attention</span>
+            <span class="cf-signal cf-signal-rouge" style="font-size:.65rem">Risque</span>
+          </div>
+        </div>
+        <div class="cf-card-body">
+          <div style="position:relative;height:280px">
+            <canvas #chartCanvas></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TABLEAU DES PRÉVISIONS ══ -->
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Détail mois par mois</span>
+          <span class="cf-badge cf-badge-gray">{{ previsions().length }} mois</span>
+        </div>
+        <div class="cf-card-body p-0">
+          <div class="table-responsive">
+            <table class="cf-table">
+              <thead>
+                <tr>
+                  <th>Mois</th><th>Date</th>
+                  <th>Prix prévu</th><th>IC Bas 95%</th><th>IC Haut 95%</th><th>Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of previsions(); track p.mois) {
+                  <tr>
+                    <td class="td-mono">M+{{ p.mois }}</td>
+                    <td class="td-mono">{{ p.date | date:'MM/yyyy' }}</td>
+                    <td class="td-price">{{ formatMoney(p.prix_prevu) }}</td>
+                    <td class="td-mono" style="color:var(--cf-text-3)">{{ formatMoney(p.ic_bas) }}</td>
+                    <td class="td-mono" style="color:var(--cf-text-3)">{{ formatMoney(p.ic_haut) }}</td>
+                    <td><span [class]="getSignalClass(p.signal)">{{ getSignalLabel(p.signal) }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- Historique -->
+  <div class="cf-card">
+    <div class="cf-card-header">
+      <span class="cf-card-title">Historique des prévisions</span>
+      <button class="btn-cf-outline py-1 px-2" style="font-size:.72rem" (click)="chargerHistorique()">↻</button>
+    </div>
+    <div class="cf-card-body p-0">
+      <div class="table-responsive">
+        <table class="cf-table">
+          <thead>
+            <tr><th>Date prévue</th><th>Prix prévu</th><th>IC 95%</th><th>Signal</th><th>Modèle</th></tr>
+          </thead>
+          <tbody>
+            @if (historique().length === 0) {
+              <tr>
+                <td colspan="5" class="text-center py-4 text-cf-muted font-mono" style="font-size:.75rem">
+                  Aucune prévision générée
+                </td>
+              </tr>
+            }
+            @for (p of historique(); track p.id) {
+              <tr>
+                <td class="td-mono">{{ p.date_prev | date:'dd/MM/yyyy' }}</td>
+                <td class="td-price">{{ formatMoney(p.prix_prevu) }}</td>
+                <td style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--cf-text-3)">
+                  [{{ formatMoney(p.ic_bas) }} – {{ formatMoney(p.ic_haut) }}]
+                </td>
+                <td><span [class]="getSignalClass(p.signal)">{{ getSignalLabel(p.signal) }}</span></td>
+                <td class="font-mono" style="font-size:.7rem;color:var(--cf-text-3)">{{ p.modele_nom }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Modal Prévision -->
+<div class="modal fade cf-modal" id="modalPrevision" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-gold-xlight)">🔮</span>
+          Nouvelle prévision
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formPrev" (ngSubmit)="submitPrevision()">
+        <div class="modal-body">
+          <div class="cf-form-group">
+            <label class="cf-label">Horizon de prévision</label>
+            <div class="d-flex align-items-center gap-3 mt-2">
+              <input type="range" class="cf-range" formControlName="horizon"
+                     min="1" max="24" (input)="onHorizonChange($event)">
+              <span class="cf-range-val">{{ horizonVal() }} mois</span>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-6">
+              <label class="cf-label">Seuil bas alerte (USD/t)</label>
+              <input type="number" class="cf-input" formControlName="seuil_bas" placeholder="ex: 2000">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Seuil haut alerte (USD/t)</label>
+              <input type="number" class="cf-input" formControlName="seuil_haut" placeholder="ex: 5000">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-gold d-flex align-items-center gap-2"
+                  [disabled]="formPrev.invalid || loadingPrev()">
+            @if (loadingPrev()) { <div class="cf-spinner active"></div> }
+            🔮 Générer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Seuils -->
+<div class="modal fade cf-modal" id="modalSeuils" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-orange-light)">⚙️</span>
+          Configurer les seuils d'alerte
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formSeuils" (ngSubmit)="submitSeuils()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-info mb-4">
+            ℹ️ Les signaux orange s'activent à ±10% des seuils. Rouge = seuil dépassé.
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="cf-label">Seuil bas (USD/t)</label>
+              <input type="number" class="cf-input" formControlName="seuil_bas"
+                     [class.is-invalid]="formSeuils.get('seuil_bas')?.invalid && formSeuils.get('seuil_bas')?.touched">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Seuil haut (USD/t)</label>
+              <input type="number" class="cf-input" formControlName="seuil_haut"
+                     [class.is-invalid]="formSeuils.get('seuil_haut')?.invalid && formSeuils.get('seuil_haut')?.touched">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-primary" [disabled]="formSeuils.invalid">
+            Mettre à jour
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

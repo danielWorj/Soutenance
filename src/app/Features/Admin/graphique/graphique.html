@@ -1,0 +1,177 @@
+ <div class="cf-content cf-page" id="page-graphique">
+
+    <div class="cf-section-header">
+      <div>
+        <h1 class="cf-section-title">Graphiques</h1>
+        <div class="cf-section-sub">VISUALISATION DES DONNÉES · PNG · TÉLÉCHARGEABLE</div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+
+      <!-- Graphique Prix -->
+      <div class="col-lg-6">
+        <div class="cf-card">
+          <div class="cf-card-header">
+            <span class="cf-card-title">📈 Prix du Cacao</span>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="cf-spinner" id="spin-g-prix"></div>
+              <a id="btn-dl-prix" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="prix.png">⬇</a>
+            </div>
+          </div>
+          <div class="cf-card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-5">
+                <label class="cf-label">Date début</label>
+                <input type="date" class="cf-input" id="g-prix-debut" value="2015-01-01">
+              </div>
+              <div class="col-5">
+                <label class="cf-label">Date fin</label>
+                <input type="date" class="cf-input" id="g-prix-fin" value="2024-12-31">
+              </div>
+              <div class="col-12">
+                <label class="cf-label">Granularité</label>
+                <select class="cf-select" id="g-prix-gran">
+                  <option value="journalier">Journalier</option>
+                  <option value="mensuel" selected>Mensuel</option>
+                  <option value="trimestriel">Trimestriel</option>
+                  <option value="annuel">Annuel</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiquePrix()">Générer</button>
+            <div class="cf-chart-zone" id="zone-g-prix">
+              <img id="img-g-prix" src="" alt="" style="display:none">
+              <div class="cf-chart-empty"><div class="chart-empty-icon">📈</div><p>Cliquez sur Générer</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique Précipitations -->
+      <div class="col-lg-6">
+        <div class="cf-card">
+          <div class="cf-card-header">
+            <span class="cf-card-title">🌧️ Précipitations</span>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="cf-spinner" id="spin-g-precip"></div>
+              <a id="btn-dl-precip" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="precip.png">⬇</a>
+            </div>
+          </div>
+          <div class="cf-card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-5">
+                <label class="cf-label">Date début</label>
+                <input type="date" class="cf-input" id="g-pr-debut" value="2015-01-01">
+              </div>
+              <div class="col-5">
+                <label class="cf-label">Date fin</label>
+                <input type="date" class="cf-input" id="g-pr-fin" value="2024-12-31">
+              </div>
+              <div class="col-12">
+                <label class="cf-label">Pays</label>
+                <div class="d-flex gap-3 flex-wrap mt-1">
+                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
+                    <input type="checkbox" class="pays-check" value="cote_ivoire" checked style="accent-color:var(--cf-green)"> Côte d'Ivoire
+                  </label>
+                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
+                    <input type="checkbox" class="pays-check" value="ghana" checked style="accent-color:var(--cf-green)"> Ghana
+                  </label>
+                  <label style="font-size:.8rem;display:flex;align-items:center;gap:5px;cursor:pointer">
+                    <input type="checkbox" class="pays-check" value="cameroun" checked style="accent-color:var(--cf-green)"> Cameroun
+                  </label>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="cf-label">Granularité</label>
+                <select class="cf-select" id="g-pr-gran">
+                  <option value="mensuel" selected>Mensuel</option>
+                  <option value="trimestriel">Trimestriel</option>
+                  <option value="annuel">Annuel</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiquePrecip()">Générer</button>
+            <div class="cf-chart-zone" id="zone-g-precip">
+              <img id="img-g-precip" src="" alt="" style="display:none">
+              <div class="cf-chart-empty"><div class="chart-empty-icon">🌧️</div><p>Cliquez sur Générer</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique Combiné -->
+      <div class="col-lg-6">
+        <div class="cf-card">
+          <div class="cf-card-header">
+            <span class="cf-card-title">🔀 Graphique Combiné</span>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="cf-spinner" id="spin-g-comb"></div>
+              <a id="btn-dl-comb" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="combine.png">⬇</a>
+            </div>
+          </div>
+          <div class="cf-card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-5">
+                <label class="cf-label">Date début</label>
+                <input type="date" class="cf-input" id="g-cb-debut" value="2015-01-01">
+              </div>
+              <div class="col-5">
+                <label class="cf-label">Date fin</label>
+                <input type="date" class="cf-input" id="g-cb-fin" value="2024-12-31">
+              </div>
+              <div class="col-6">
+                <label class="cf-label">Pays précipitations</label>
+                <select class="cf-select" id="g-cb-pays">
+                  <option value="cote_ivoire">Côte d'Ivoire</option>
+                  <option value="ghana">Ghana</option>
+                  <option value="cameroun">Cameroun</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="cf-label">Granularité</label>
+                <select class="cf-select" id="g-cb-gran">
+                  <option value="mensuel" selected>Mensuel</option>
+                  <option value="trimestriel">Trimestriel</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-cf-primary w-100 mb-3" onclick="genererGraphiqueCombine()">Générer</button>
+            <div class="cf-chart-zone" id="zone-g-comb">
+              <img id="img-g-comb" src="" alt="" style="display:none">
+              <div class="cf-chart-empty"><div class="chart-empty-icon">🔀</div><p>Cliquez sur Générer</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique Prévision -->
+      <div class="col-lg-6">
+        <div class="cf-card">
+          <div class="cf-card-header">
+            <span class="cf-card-title">🔮 Prévision visuelle</span>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="cf-spinner" id="spin-g-prev"></div>
+              <a id="btn-dl-prev" class="btn-cf-outline py-1 px-2" style="font-size:.72rem" download="prevision.png">⬇</a>
+            </div>
+          </div>
+          <div class="cf-card-body">
+            <div class="mb-3">
+              <label class="cf-label">Mois d'historique à afficher</label>
+              <div class="d-flex align-items-center gap-3 mt-1">
+                <input type="range" class="cf-range flex-1" id="g-pv-mois" min="6" max="60" value="24"
+                       oninput="document.getElementById('g-pv-mois-val').textContent=this.value+' mois'">
+                <span class="cf-range-val" id="g-pv-mois-val">24 mois</span>
+              </div>
+            </div>
+            <button class="btn-cf-gold w-100 mb-3" onclick="genererGraphiquePrevision()">Générer</button>
+            <div class="cf-chart-zone" id="zone-g-prev">
+              <img id="img-g-prev" src="" alt="" style="display:none">
+              <div class="cf-chart-empty"><div class="chart-empty-icon">🔮</div><p>Cliquez sur Générer</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>

@@ -1,0 +1,334 @@
+<div class="cf-content">
+
+  <!-- Toast -->
+  @if (toast()) {
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+      <div class="toast show" [style.border-left]="toast()!.type === 'success' ? '3px solid var(--cf-green)' : '3px solid var(--cf-red)'"
+           style="border-radius:10px;min-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+        <div class="d-flex">
+          <div class="toast-body d-flex align-items-start gap-2" style="font-size:.82rem">
+            <span>{{ toast()!.type === 'success' ? '✅' : '❌' }}</span>
+            <span>{{ toast()!.msg }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="cf-section-header">
+    <div>
+      <h1 class="cf-section-title">Import des Données</h1>
+      <div class="cf-section-sub">SOURCES : YFINANCE · NASA POWER · NOAA CPC</div>
+    </div>
+    <button class="btn-cf-gold" data-bs-toggle="modal" data-bs-target="#modalImportTout">
+      ⚡ Import complet
+    </button>
+  </div>
+
+  <!-- Cards sources -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="cf-card">
+        <div class="cf-card-body text-center" style="padding:24px">
+          <div style="font-size:2rem;margin-bottom:10px">💲</div>
+          <div style="font-weight:700;margin-bottom:4px;font-size:.9rem">Prix du Cacao</div>
+          <div class="text-cf-muted font-mono mb-3" style="font-size:.7rem">Yahoo Finance · CC=F Futures</div>
+          <button class="btn-cf-primary w-100" data-bs-toggle="modal" data-bs-target="#modalImportPrix">
+            Importer les prix
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cf-card">
+        <div class="cf-card-body text-center" style="padding:24px">
+          <div style="font-size:2rem;margin-bottom:10px">🌧️</div>
+          <div style="font-weight:700;margin-bottom:4px;font-size:.9rem">Précipitations</div>
+          <div class="text-cf-muted font-mono mb-3" style="font-size:.7rem">NASA POWER API · 3 pays</div>
+          <button class="btn-cf-primary w-100" data-bs-toggle="modal" data-bs-target="#modalImportPrecip">
+            Importer précipitations
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cf-card">
+        <div class="cf-card-body text-center" style="padding:24px">
+          <div style="font-size:2rem;margin-bottom:10px">🌊</div>
+          <div style="font-weight:700;margin-bottom:4px;font-size:.9rem">Indice ENSO/ONI</div>
+          <div class="text-cf-muted font-mono mb-3" style="font-size:.7rem">NOAA CPC · Mensuel</div>
+          <button class="btn-cf-primary w-100" data-bs-toggle="modal" data-bs-target="#modalImportEnso">
+            Importer ENSO
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cf-card" style="background:linear-gradient(135deg,var(--cf-green),var(--cf-green-light));border-color:transparent">
+        <div class="cf-card-body text-center" style="padding:24px">
+          <div style="font-size:2rem;margin-bottom:10px">⚡</div>
+          <div style="font-weight:700;margin-bottom:4px;font-size:.9rem;color:#fff">Import Complet</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;margin-bottom:12px">Prix + Précipitations</div>
+          <button class="btn-cf-gold w-100" data-bs-toggle="modal" data-bs-target="#modalImportTout">
+            Tout importer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Aperçu données -->
+    <div class="col-lg-8">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <div>
+            <span class="cf-card-title">Aperçu des données</span>
+            @if (apercu()) {
+              <div class="d-flex gap-3 mt-1" style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--cf-text-3)">
+                <span>Total : <strong class="text-cf-green">{{ apercu()!.total_mois }} mois</strong></span>
+                <span>De : <strong>{{ apercu()!.date_debut | date:'dd/MM/yyyy' }}</strong></span>
+                <span>À : <strong>{{ apercu()!.date_fin | date:'dd/MM/yyyy' }}</strong></span>
+              </div>
+            }
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            @if (loadingApercu()) { <div class="cf-spinner active"></div> }
+            <button class="btn-cf-outline py-1 px-3" style="font-size:.75rem" (click)="chargerApercu()">
+              ↻ Rafraîchir
+            </button>
+          </div>
+        </div>
+        <div class="cf-card-body p-0">
+          <div class="table-responsive">
+            <table class="cf-table">
+              <thead>
+                <tr>
+                  <th>Mois</th><th>Prix (USD/t)</th>
+                  <th>Précip. CI (mm)</th><th>Précip. Ghana (mm)</th><th>Précip. Cameroun (mm)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (!apercu()) {
+                  <tr>
+                    <td colspan="5" class="text-center py-4 text-cf-muted font-mono" style="font-size:.75rem">
+                      Cliquez sur ↻ Rafraîchir
+                    </td>
+                  </tr>
+                }
+                @for (row of apercu()?.apercu ?? []; track row['date']) {
+                  <tr>
+                    <td class="td-mono">{{ row['date'] }}</td>
+                    <td class="td-price">{{ row['prix_usd'] | number:'1.0-0' }} $</td>
+                    <td class="td-mono">{{ row['precip_ci'] | number:'1.1-1' }}</td>
+                    <td class="td-mono">{{ row['precip_ghana'] | number:'1.1-1' }}</td>
+                    <td class="td-mono">{{ row['precip_cameroun'] | number:'1.1-1' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="col-lg-4">
+      <div class="cf-card">
+        <div class="cf-card-header">
+          <span class="cf-card-title">Historique imports</span>
+          <button class="btn-cf-outline py-1 px-2" style="font-size:.72rem" (click)="chargerLogs()">↻</button>
+        </div>
+        <div class="cf-card-body">
+          @if (logs().length === 0) {
+            <p class="text-cf-muted font-mono" style="font-size:.75rem">Aucun import enregistré</p>
+          }
+          @for (log of logs(); track log.id) {
+            <div class="cf-log-item">
+              <div [class]="getLogClass(log.statut)"></div>
+              <div class="cf-log-info">
+                <div class="cf-log-source">{{ log.source }} — {{ log.type_data }}</div>
+                <div class="cf-log-msg">{{ log.message }}</div>
+              </div>
+              <div class="cf-log-time">{{ log.created_at | date:'dd/MM/yy' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Modal Import Tout -->
+<div class="modal fade cf-modal" id="modalImportTout" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">⚡</span>
+          Import complet
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formTout" (ngSubmit)="submitTout()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-info mb-4">
+            ℹ️ Importe prix (Yahoo Finance) + précipitations (NASA POWER) pour les 3 pays.
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="cf-label">Date début</label>
+              <input type="date" class="cf-input" formControlName="date_debut"
+                     [class.is-invalid]="formTout.get('date_debut')?.invalid && formTout.get('date_debut')?.touched">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Date fin</label>
+              <input type="date" class="cf-input" formControlName="date_fin"
+                     [class.is-invalid]="formTout.get('date_fin')?.invalid && formTout.get('date_fin')?.touched">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-gold d-flex align-items-center gap-2"
+                  [disabled]="formTout.invalid || loadingTout()">
+            @if (loadingTout()) { <div class="cf-spinner active"></div> }
+            ⚡ Lancer l'import
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Prix -->
+<div class="modal fade cf-modal" id="modalImportPrix" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-green-xlight)">💲</span>
+          Import des prix cacao
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formPrix" (ngSubmit)="submitPrix()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-info mb-4">
+            ℹ️ Source : Yahoo Finance (CC=F futures). Fallback : NIB ETF.
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="cf-label">Date début</label>
+              <input type="date" class="cf-input" formControlName="date_debut">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Date fin</label>
+              <input type="date" class="cf-input" formControlName="date_fin">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-primary d-flex align-items-center gap-2"
+                  [disabled]="formPrix.invalid || loadingPrix()">
+            @if (loadingPrix()) { <div class="cf-spinner active"></div> }
+            Importer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Précipitations -->
+<div class="modal fade cf-modal" id="modalImportPrecip" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:var(--cf-gold-xlight)">🌧️</span>
+          Import des précipitations
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formPrecip" (ngSubmit)="submitPrecip()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-warning mb-4">
+            ⚠️ Source : NASA POWER API. L'import peut prendre 1–2 minutes par pays.
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="cf-label">Date début</label>
+              <input type="date" class="cf-input" formControlName="date_debut">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Date fin</label>
+              <input type="date" class="cf-input" formControlName="date_fin">
+            </div>
+            <div class="col-12">
+              <label class="cf-label">Pays (vide = tous les 3)</label>
+              <select class="cf-select" formControlName="pays">
+                <option value="">Tous les pays (CI + Ghana + Cameroun)</option>
+                <option value="cote_ivoire">Côte d'Ivoire uniquement</option>
+                <option value="ghana">Ghana uniquement</option>
+                <option value="cameroun">Cameroun uniquement</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-primary d-flex align-items-center gap-2"
+                  [disabled]="formPrecip.invalid || loadingPrecip()">
+            @if (loadingPrecip()) { <div class="cf-spinner active"></div> }
+            Importer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import ENSO -->
+<div class="modal fade cf-modal" id="modalImportEnso" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="modal-icon" style="background:#eff6ff">🌊</span>
+          Import indice ENSO/ONI
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="formEnso" (ngSubmit)="submitEnso()">
+        <div class="modal-body">
+          <div class="cf-alert cf-alert-info mb-4">
+            ℹ️ Source : NOAA Climate Prediction Center. Données mensuelles depuis 1950.
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="cf-label">Date début (optionnel)</label>
+              <input type="date" class="cf-input" formControlName="date_debut">
+            </div>
+            <div class="col-6">
+              <label class="cf-label">Date fin (optionnel)</label>
+              <input type="date" class="cf-input" formControlName="date_fin">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cf-outline" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn-cf-primary d-flex align-items-center gap-2"
+                  [disabled]="loadingEnso()">
+            @if (loadingEnso()) { <div class="cf-spinner active"></div> }
+            Importer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

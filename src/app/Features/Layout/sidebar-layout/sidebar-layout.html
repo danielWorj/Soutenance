@@ -1,0 +1,51 @@
+<aside class="cf-sidebar" id="sidebar">
+
+  <div class="cf-sidebar-brand">
+    <div class="brand-icon">🍫</div>
+    <div>
+      <div class="brand-name">CacaoForecast</div>
+      <div class="brand-sub">SARIMAX · v1.0</div>
+    </div>
+  </div>
+
+  <div class="cf-nav-section">
+    <div class="cf-nav-label">Principal</div>
+
+    <button class="cf-nav-link active" data-page="dashboard" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span> Tableau de bord
+    </button>
+
+    <button class="cf-nav-link" data-page="data" onclick="navigate('data')">
+      <span class="nav-icon">📥</span> Import Données
+    </button>
+
+    <button class="cf-nav-link" data-page="expert" onclick="navigate('expert')">
+      <span class="nav-icon">⚙️</span> Système Expert
+    </button>
+
+    <button class="cf-nav-link" data-page="prevision" onclick="navigate('prevision')">
+      <span class="nav-icon">🔮</span> Prévisions
+    </button>
+
+    <button class="cf-nav-link" data-page="graphique" onclick="navigate('graphique')">
+      <span class="nav-icon">📈</span> Graphiques
+    </button>
+  </div>
+
+  <div class="cf-nav-section">
+    <div class="cf-nav-label">Tests</div>
+    <a class="cf-nav-link" href="index.html" target="_blank">
+      <span class="nav-icon">🧪</span> API Tester
+    </a>
+  </div>
+
+  <div class="cf-sidebar-footer">
+    <div class="cf-sidebar-status">
+      <div class="cf-status-dot" id="status-dot"></div>
+      <div class="cf-status-text">
+        <strong>Flask API</strong>
+        <span id="status-text">vérification...</span>
+      </div>
+    </div>
+  </div>
+</aside>
